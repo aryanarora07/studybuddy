@@ -21,7 +21,7 @@ app.get("/", (_, res) => {
 
 async function connectToDatabase () {
   try {
-    await mongoose.connect("mongodb+srv://arora:Aryan6100@cluster0.t0dcgix.mongodb.net/studybuddy?retryWrites=true&w=majority&appName=Cluster0")
+    await mongoose.connect(process.env.MONGODB_URL)
     console.log("Succesfully connected to DB");
 
   } catch (error) {
