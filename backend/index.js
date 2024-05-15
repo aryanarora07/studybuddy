@@ -13,6 +13,7 @@ app.use(cors());
 const port = 4000;
 
 const UserModel = require("./models/users");
+const UserInfo = require("./models/userInfo");
 
 
 app.get("/", (_, res) => {
@@ -68,7 +69,7 @@ app.post("/login", (req, res) => {
 
         const token = generateToken(payload); // generating payload
 
-        console.log("Token generated:  " + token)
+        // console.log("Token generated:  " + token)
 
         res.status(200).json(token);  // sending token to frontend for verification
       } else {
@@ -81,6 +82,16 @@ app.post("/login", (req, res) => {
 });
 
 
+app.post('/profile', async (req, res)=>{
+  try {
+      const newUserInfo = await UserInfo.create(req.body)
+      console.log("user info added: " + newUserInfo);
+
+  } catch (error) {
+    
+  }
+})
+
 app.get('/profile', jwtAuthMiddleware, async (req, res)=>{
   try {
     const userData = req.user;
@@ -91,6 +102,8 @@ app.get('/profile', jwtAuthMiddleware, async (req, res)=>{
     const user = await UserModel.findOne({email:userEmail});
     // console.log(user)
     res.status(200).json({user})
+
+
   } 
 
   catch (error) {
