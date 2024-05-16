@@ -64,27 +64,45 @@ app.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
     const user = await UserModel.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ error: "User not found. Please sign up." });
+
+    if (user) {
+      if (user.password === password) {
+        const payload = {
+          id: user._id,
+          email: user.email
+        };
+
+        const token = generateToken(payload);
+        console.log("token  " + token);
+
+        const userInfo = await UserInfo.findOne({ email });
+        const redirectTo = userInfo && userInfo.major && userInfo.year ? "/home" : "/profile";
+
+        const responsePayload = {token, redirectTo};
+
+        // Send token to frontend for verification
+        res.status(200).json(responsePayload);
+
+        // const userInfo = await UserInfo.findOne({ email });
+
+        // if (userInfo && userInfo.major && userInfo.year) {
+        //   // Major and year exist, redirect to home page
+        //   return res.status(200).json({ redirectTo: "/home" });
+        // } else {
+        //   // Major and year don't exist, redirect to profile page
+        //   return res.status(200).json({ redirectTo: "/profile" });
+        // }
+      } else {
+        console.log("The password is incorrect");
+      }
+    } else {
+      console.log("User not found. You need to sign up.");
     }
-
-    if (user.password !== password) {
-      return res.status(400).json({ error: "Invalid password" });
-    }
-
-    const payload = { id: user._id, email: user.email };
-    const token = generateToken(payload);
-
-    const userInfo = await UserInfo.findOne({ email });
-    const redirectTo = userInfo && userInfo.major && userInfo.year ? "/home" : "/profile";
-
-    res.status(200).json({ token, redirectTo });
   } catch (error) {
-    console.error("Error during login: ", error);
+    console.error("Error during login:", error);
     res.status(500).json({ error: "An error occurred during login" });
   }
 });
-
 
 
 

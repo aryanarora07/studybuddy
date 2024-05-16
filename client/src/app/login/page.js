@@ -36,7 +36,7 @@ const login = () => {
       // console.log(response);
 
       // Assuming the response contains the token
-      const token = response.data;
+      const {token} = response.data;
       const {redirectTo} = response.data;
 
       // Store the token in local storage or cookie

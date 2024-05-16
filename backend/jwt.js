@@ -27,7 +27,8 @@ const jwtAuthMiddleware = (req, res, next) => {
         // bas jo request server me aage jaa rha h usme ham nya key add kr dete hain to send user info
 
     } catch (error) {
-        console.log(error)
+        // console.log("error: " + error.message)
+        console.log(error);
         res.status(401).json({error: "Invalid Token"})
     }
 }
