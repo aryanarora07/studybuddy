@@ -1,17 +1,23 @@
+// models/userInfo.js
+
 const mongoose = require("mongoose");
 
-
-const Schema = new mongoose.Schema({
-    major:{
-        type:String,
+const userInfoSchema = new mongoose.Schema({
+    email: {
+        type: String,
         required: true,
+        unique: true // Ensure email is unique
     },
-    year:{
+    major: {
+        type: String,
+        default: ""
+    },
+    year: {
         type: Number,
-        required: true,
+        default: 0
     }
-})
+});
 
-const UserInfo = mongoose.model('UserInfo', Schema);
+const UserInfo = mongoose.model('UserInfo', userInfoSchema);
 
 module.exports = UserInfo;

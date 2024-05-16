@@ -54,13 +54,17 @@ const Profile = () => {
   }
 
   const handleSubmit = (e) => {
-
     e.preventDefault();
-    axios.post("http://localhost:4000/profile", {major, year})
-    .then(()=> console.log("data saved to db"))
-    .catch((error)=> console.log(error));
+    const token = localStorage.getItem("token");
+    axios.post("http://localhost:4000/profile", { major, year }, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    .then(() => router.push('/home'))
+    .catch(err => console.log(err));
   }
-
+  
 
   return <>
     <div className="bg-slate-100 h-screen">

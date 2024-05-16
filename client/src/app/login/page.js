@@ -37,12 +37,13 @@ const login = () => {
 
       // Assuming the response contains the token
       const token = response.data;
+      const {redirectTo} = response.data;
 
       // Store the token in local storage or cookie
       localStorage.setItem("token", token);
 
       // Redirect to profile page
-      router.push("/profile");
+      router.push(redirectTo);
     } 
     catch (err) 
     {

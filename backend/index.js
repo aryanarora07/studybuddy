@@ -33,7 +33,16 @@ connectToDatabase();
 
 app.post("/signup", async (req, res) => {
   try {
-    const newUser = await UserModel.create(req.body);
+    const { firstName, lastName, email, password } = req.body; // Destructure the required fields
+
+    // Check if all required fields are present
+    if (!firstName || !lastName || !email || !password) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const newUser = await UserModel.create(req.body); // Create a new user
+    await UserInfo.create({ email: newUser.email, major: "", year: 0 });
+
     console.log("Successfully created user in db:", newUser);
 
     const payload = {
@@ -41,56 +50,64 @@ app.post("/signup", async (req, res) => {
       email: req.body.email,
     };
 
-    const token = generateToken(payload);
+    const token = generateToken(payload); // Generate JWT token
     res.status(200).json({ response: req.body, token: token, id: newUser._id });
-    
-  } 
-    catch (error) 
-    {
-      console.log(error);
-      res.status(500).json({ error: "Failed to create user" });
-    }
-});
-
-app.post("/login", (req, res) => {
-
-  const { email, password } = req.body;  //extracting username and pwd from body by obj destructuring
-
-  UserModel.findOne({ email: email }).then((user) => {    // finding email in db
-
-    if (user) {                                           // if user exists
-      if (user.password == password) {
-        // res.json("Success");
-
-        const payload = {   // payload for token generation
-          id: user._id,
-          email: user.email
-        }
-
-        const token = generateToken(payload); // generating payload
-
-        // console.log("Token generated:  " + token)
-
-        res.status(200).json(token);  // sending token to frontend for verification
-      } else {
-        console.log("The pwd is incorrect");
-      }
-    } else {
-      console.log("You need to signup");
-    }
-  });
-});
-
-
-app.post('/profile', async (req, res)=>{
-  try {
-      const newUserInfo = await UserInfo.create(req.body)
-      console.log("user info added: " + newUserInfo);
-
   } catch (error) {
-    
+    console.log(error);
+    res.status(500).json({ error: "Failed to create user" });
   }
-})
+});
+
+
+app.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: "User not found. Please sign up." });
+    }
+
+    if (user.password !== password) {
+      return res.status(400).json({ error: "Invalid password" });
+    }
+
+    const payload = { id: user._id, email: user.email };
+    const token = generateToken(payload);
+
+    const userInfo = await UserInfo.findOne({ email });
+    const redirectTo = userInfo && userInfo.major && userInfo.year ? "/home" : "/profile";
+
+    res.status(200).json({ token, redirectTo });
+  } catch (error) {
+    console.error("Error during login: ", error);
+    res.status(500).json({ error: "An error occurred during login" });
+  }
+});
+
+
+
+
+app.post("/profile", jwtAuthMiddleware, async (req, res) => {
+  try {
+    const { major, year } = req.body;
+    const userEmail = req.user.email; // Extract email from the authenticated user
+
+    const userInfo = await UserInfo.findOneAndUpdate(
+      { email: userEmail }, // Query by email
+      { major, year }, // Update with provided major and year
+      { new: true, upsert: true, setDefaultsOnInsert: true } // Options to create if not exists and set defaults
+    );
+
+    console.log("user info added: ", userInfo);
+
+    res.status(200).json({ message: "Success" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Failed to create userInfo" });
+  }
+});
+
 
 app.get('/profile', jwtAuthMiddleware, async (req, res)=>{
   try {
