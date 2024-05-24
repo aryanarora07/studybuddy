@@ -31,6 +31,7 @@ async function connectToDatabase () {
 }
 connectToDatabase();
 
+
 app.post("/signup", async (req, res) => {
   try {
     const { firstName, lastName, email, password } = req.body; // Destructure the required fields
@@ -73,7 +74,7 @@ app.post("/login", async (req, res) => {
         };
 
         const token = generateToken(payload);
-        console.log("token  " + token);
+        // console.log("token  " + token);
 
         const userInfo = await UserInfo.findOne({ email });
         const redirectTo = userInfo && userInfo.major && userInfo.year ? "/home" : "/profile";
@@ -83,15 +84,6 @@ app.post("/login", async (req, res) => {
         // Send token to frontend for verification
         res.status(200).json(responsePayload);
 
-        // const userInfo = await UserInfo.findOne({ email });
-
-        // if (userInfo && userInfo.major && userInfo.year) {
-        //   // Major and year exist, redirect to home page
-        //   return res.status(200).json({ redirectTo: "/home" });
-        // } else {
-        //   // Major and year don't exist, redirect to profile page
-        //   return res.status(200).json({ redirectTo: "/profile" });
-        // }
       } else {
         console.log("The password is incorrect");
       }
@@ -144,6 +136,22 @@ app.get('/profile', jwtAuthMiddleware, async (req, res)=>{
   catch (error) {
     console.log(error);
     res.status(500).json({error: "Internal Server Error"})
+  }
+})
+
+app.get('/home', async (req, res)=>{
+  try {
+    
+    const user = await UserModel.find({});
+    // console.log(user) 
+    res.status(200).json({user});
+
+
+  } 
+
+  catch (error) {
+    console.log(error);
+    res.status(500).json({error: error.message})
   }
 })
 
