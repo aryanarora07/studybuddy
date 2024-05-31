@@ -143,8 +143,12 @@ app.get('/home', async (req, res)=>{
   try {
     
     const user = await UserModel.find({});
-    // console.log(user) 
-    res.status(200).json({user});
+    const userInfo = await UserInfo.find({});
+    console.log(user) 
+    console.log(userInfo);
+    res.status(200).json({user, userInfo});
+
+
 
 
   } 
